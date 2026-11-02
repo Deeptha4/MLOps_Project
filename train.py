@@ -51,7 +51,9 @@ def candidates():
         "logistic_regression": make_pipeline(
             StandardScaler(), LogisticRegression(max_iter=2000, random_state=42)
         ),
-        "random_forest": RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1),
+        "random_forest": RandomForestClassifier(
+            n_estimators=200, min_samples_leaf=2, random_state=42
+        ),
         "hist_gradient_boosting": HistGradientBoostingClassifier(random_state=42),
     }
 
@@ -88,7 +90,7 @@ def main(out_dir: Path = ROOT) -> dict:
             strict=True)
     )
 
-    imp = permutation_importance(model, X_te, y_te, n_repeats=5, random_state=42, n_jobs=-1)
+    imp = permutation_importance(model, X_te, y_te, n_repeats=3, random_state=42)
     importance = {f: float(v) for f, v in zip(FEATURES, imp.importances_mean, strict=True)}
 
     info = {
