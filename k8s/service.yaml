@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlapp
+  labels:
+    app: mlapp
+spec:
+  type: LoadBalancer
+  selector:
+    app: mlapp
+  ports:
+    - name: web
+      port: 80
+      targetPort: web
+    - name: metrics
+      port: 8000
+      targetPort: metrics

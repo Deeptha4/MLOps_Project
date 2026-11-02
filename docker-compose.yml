@@ -1,0 +1,31 @@
+# Local full stack (app + Prometheus + Grafana). Great fallback demo if Azure is unavailable.
+#   docker compose up --build
+#   app: http://localhost:8501   prometheus: http://localhost:9090   grafana: http://localhost:3000
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+      - "8000:8000"
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus

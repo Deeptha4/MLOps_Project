@@ -1,0 +1,15 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+model.joblib
+metrics.json
+sample_batch.csv
+.terraform/
+*.tfstate*
+terraform.tfvars
+.venv/
+.venv/
+*.tar
+*.tar.gz
+handoff/

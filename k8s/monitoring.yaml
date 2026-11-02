@@ -1,0 +1,47 @@
+# Apply AFTER installing kube-prometheus-stack (needs its CRDs). `release: monitoring`
+# must match the helm release name so Prometheus picks these up.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mlapp
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: mlapp
+  endpoints:
+    - port: metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mlapp-alerts
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: mlapp
+      rules:
+        - alert: MlAppDown
+          expr: sum(up{job="mlapp"}) < 1
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "No mlapp instance is being scraped"
+        - alert: HighPredictionLatency
+          expr: histogram_quantile(0.95, sum(rate(prediction_latency_seconds_bucket[5m])) by (le)) > 0.5
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "p95 prediction latency above 500ms"
+        - alert: UploadErrors
+          expr: increase(app_errors_total[5m]) > 5
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "More than 5 application errors in 5 minutes"

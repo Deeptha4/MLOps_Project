@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlapp
+  labels:
+    app: mlapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mlapp
+  template:
+    metadata:
+      labels:
+        app: mlapp
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: mlapp
+          # OWNER is replaced with your GitHub username by `make k8s-deploy`
+          image: ghcr.io/OWNER/mlapp:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8501
+              name: web
+            - containerPort: 8000
+              name: metrics
+          readinessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: web
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: web
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi

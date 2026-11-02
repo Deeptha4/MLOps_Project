@@ -1,0 +1,13 @@
+.git
+.github
+terraform
+k8s
+tests
+docs
+monitoring
+__pycache__
+.pytest_cache
+.ruff_cache
+model.joblib
+metrics.json
+sample_batch.csv

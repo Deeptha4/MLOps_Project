@@ -1,0 +1,4 @@
+# cp terraform.tfvars.example terraform.tfvars
+prefix   = "mlproject"
+location = "centralindia"
+vm_size  = "Standard_B2s"

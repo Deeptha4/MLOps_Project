@@ -1,0 +1,12 @@
+flowchart LR
+  Dev([Developer]) -->|git push / PR| GH[GitHub repo]
+  GH --> CI[GitHub Actions<br/>lint, test, terraform validate,<br/>Docker build]
+  CI -->|build + push| GHCR[(GHCR image)]
+  TF[Terraform] -->|provisions| AKS
+  subgraph Azure
+    AKS[AKS cluster<br/>Deployment x2 + HPA<br/>LoadBalancer Service]
+  end
+  GHCR -->|pull| AKS
+  User([User]) -->|HTTP :80| AKS
+  AKS -->|/metrics :8000| PROM[Prometheus<br/>ServiceMonitor + alerts]
+  PROM --> GRAF[Grafana dashboard]

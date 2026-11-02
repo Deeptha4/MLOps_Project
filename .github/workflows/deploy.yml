@@ -1,0 +1,33 @@
+name: Deploy to AKS
+
+# Manual (optional) CD. Needs repo secret AZURE_CREDENTIALS:
+#   az ad sp create-for-rbac --name mlproject-gh --role contributor \
+#     --scopes /subscriptions/<SUB_ID>/resourceGroups/mlproject-rg --sdk-auth
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to deploy
+        default: latest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: azure/aks-set-context@v4
+        with:
+          resource-group: mlproject-rg
+          cluster-name: mlproject-aks
+      - name: Apply manifests
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          sed "s|OWNER|${OWNER}|; s|:latest|:${TAG}|" k8s/deployment.yaml | kubectl apply -f -
+          kubectl apply -f k8s/service.yaml -f k8s/hpa.yaml
+          kubectl rollout status deployment/mlapp --timeout=180s
+          kubectl get pods,svc
