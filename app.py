@@ -36,6 +36,12 @@ def init_metrics():
 
 @st.cache_resource
 def load_artifacts():
+    if not (BASE / "model.joblib").exists():
+        # e.g. Streamlit Community Cloud: no build step, so train on first start (~20 s)
+        import train
+
+        with st.spinner("First start: training the model (about 20 seconds)..."):
+            train.main(BASE)
     model = joblib.load(BASE / "model.joblib")
     info = json.loads((BASE / "metrics.json").read_text())
     sample = pd.read_csv(BASE / "sample_batch.csv")
